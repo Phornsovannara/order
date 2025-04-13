@@ -1,62 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Order Form</title>
   <meta charset="UTF-8">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    input, button {
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    #status {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
+  <title>Menu Order</title>
 </head>
 <body>
   <h2>Place Your Order</h2>
   <form id="orderForm">
-    <label for="table">Table:</label><br>
-    <input type="text" id="table" name="table" required><br><br>
-
-    <label for="menu">Menu:</label><br>
-    <input type="text" id="menu" name="menu" required><br><br>
-
-    <button type="submit">Send Order</button>
+    <label>Table: <input type="text" name="Table" required></label><br><br>
+    <label>Menu: <input type="text" name="Menu" required></label><br><br>
+    <button type="submit">Submit Order</button>
   </form>
 
-  <p id="status"></p>
+  <p id="response"></p>
 
   <script>
-    document.getElementById("orderForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const table = document.getElementById("table").value;
-      const menu = document.getElementById("menu").value;
-      const formData = `Table=${encodeURIComponent(table)}&Menu=${encodeURIComponent(menu)}`;
+    const form = document.getElementById("orderForm");
+    const responseEl = document.getElementById("response");
 
-      fetch("https://your-glitch-app.glitch.me/send-order", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ table, menu })
-})
-      .then(res => {
-        if (!res.ok) throw new Error("Network response was not OK");
-        return res.text();
-      })
-      .then(text => {
-        document.getElementById("status").innerText = text;
-        document.getElementById("status").style.color = "green";
-      })
-      .catch(err => {
-        console.error("Fetch error:", err);
-        document.getElementById("status").innerText = "❌ Error sending order: " + err.message;
-        document.getElementById("status").style.color = "red";
-      });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = new URLSearchParams();
+      for (const pair of formData) {
+        data.append(pair[0], pair[1]);
+      }
+
+      try {
+        const res = await fetch("https://your-glitch-project.glitch.me/order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: data
+        });
+
+        const text = await res.text();
+        responseEl.textContent = text;
+      } catch (err) {
+        responseEl.textContent = "❌ Failed to send order.";
+        console.error(err);
+      }
     });
   </script>
 </body>
